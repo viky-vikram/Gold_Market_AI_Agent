@@ -26,7 +26,11 @@ dev = [
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-extend-exclude = [".venv"]
+# ruff formats Python code blocks inside Markdown. The controlled documents
+# contain illustrative Python (TRD sections 7.3/7.4, Contracts sections 11-13),
+# so without this exclusion `ruff format .` rewrites two approved specifications
+# and trips the integrity gate in tests/smoke/.
+extend-exclude = [".venv", "docs/controlled"]
 
 [tool.ruff.lint]
 select = [
