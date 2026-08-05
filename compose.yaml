@@ -46,7 +46,11 @@ services:
     build:
       context: .
       dockerfile: docker/api.Dockerfile
-    env_file: [.env]
+    # Optional so `docker compose config` validates on a fresh clone, before
+    # anyone has run `cp .env.example .env`.
+    env_file:
+      - path: .env
+        required: false
     ports:
       - "${API_HOST_PORT:-8000}:8000"
     depends_on:
@@ -61,7 +65,11 @@ services:
       context: .
       dockerfile: docker/api.Dockerfile
     command: ["celery", "-A", "app.tasks", "worker", "--loglevel=info"]
-    env_file: [.env]
+    # Optional so `docker compose config` validates on a fresh clone, before
+    # anyone has run `cp .env.example .env`.
+    env_file:
+      - path: .env
+        required: false
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,7 +81,11 @@ services:
     build:
       context: .
       dockerfile: docker/web.Dockerfile
-    env_file: [.env]
+    # Optional so `docker compose config` validates on a fresh clone, before
+    # anyone has run `cp .env.example .env`.
+    env_file:
+      - path: .env
+        required: false
     ports:
       - "${WEB_HOST_PORT:-3000}:3000"
     depends_on:
