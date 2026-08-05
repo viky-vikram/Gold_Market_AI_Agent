@@ -1,0 +1,72 @@
+name: Integration
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: aurumiq_test
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ${{ secrets.CI_DB_PASSWORD || 'ci_local_only' }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      valkey:
+        image: valkey/valkey:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      # Integration tests arrive with the first vertical slice (GMAA-005+).
+      # Reports honestly until then; activates automatically once tests exist.
+      - name: Detect integration tests
+        id: detect
+        run: |
+          if compgen -G "tests/acceptance/test_*.py" > /dev/null; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No integration tests under tests/acceptance/ yet (GMAA-005 onward). Nothing to run."
+          fi
+
+      - name: Run integration tests
+        if: steps.detect.outputs.present == 'true'
+        run: uv run pytest tests/acceptance -v
+        env:
+          DATABASE_URL: postgresql+psycopg://ci_user:${{ secrets.CI_DB_PASSWORD || 'ci_local_only' }}@localhost:5432/aurumiq_test
+          VALKEY_URL: redis://localhost:6379/0

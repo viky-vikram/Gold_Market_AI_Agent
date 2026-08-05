@@ -1,0 +1,59 @@
+name: Docs and contracts
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  controlled-documents:
+    name: Controlled documents unmodified
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python toolchain
+        run: uv sync --frozen
+
+      - name: Verify the seven controlled documents are intact
+        run: uv run pytest tests/smoke/test_controlled_documents.py -v
+
+      - name: Verify traceability matrix is present
+        run: |
+          if [ ! -f docs/traceability/requirements.md ]; then
+            echo "::error::docs/traceability/requirements.md is missing. Every acceptance criterion needs a requirement ID."
+            exit 1
+          fi
+          echo "::notice::Traceability matrix present."
+
+  markdown-format:
+    name: Markdown formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # docs/controlled/ is excluded via .prettierignore — formatting an approved
+      # specification would trip the integrity gate above.
+      - name: Check formatting
+        run: pnpm format:check

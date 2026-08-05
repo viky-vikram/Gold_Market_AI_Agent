@@ -1,0 +1,75 @@
+name: Migrations and RLS
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  migrations:
+    name: Migration upgrade/downgrade and RLS matrix
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: aurumiq_test
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ${{ secrets.CI_DB_PASSWORD || 'ci_local_only' }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      # Migrations arrive in GMAA-003. Until then there is genuinely nothing to
+      # verify, and this job says so rather than reporting a green tick that
+      # implies coverage. The moment a migration lands the condition flips and
+      # the real checks run — this cannot silently stay a no-op.
+      - name: Detect migrations
+        id: detect
+        run: |
+          if compgen -G "database/migrations/versions/*.py" > /dev/null; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No migrations under database/migrations/versions/ yet (GMAA-003 delivers these). Nothing to verify."
+          fi
+
+      - name: Upgrade to head
+        if: steps.detect.outputs.present == 'true'
+        run: uv run alembic upgrade head
+        env:
+          DATABASE_URL: postgresql+psycopg://ci_user:${{ secrets.CI_DB_PASSWORD || 'ci_local_only' }}@localhost:5432/aurumiq_test
+
+      - name: Downgrade to base
+        if: steps.detect.outputs.present == 'true'
+        run: uv run alembic downgrade base
+        env:
+          DATABASE_URL: postgresql+psycopg://ci_user:${{ secrets.CI_DB_PASSWORD || 'ci_local_only' }}@localhost:5432/aurumiq_test
+
+      - name: RLS policy matrix
+        if: steps.detect.outputs.present == 'true'
+        run: uv run pytest tests/security -m rls -v
+        env:
+          DATABASE_URL: postgresql+psycopg://ci_user:${{ secrets.CI_DB_PASSWORD || 'ci_local_only' }}@localhost:5432/aurumiq_test

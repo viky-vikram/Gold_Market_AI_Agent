@@ -1,0 +1,28 @@
+# Normalise line endings so Windows, macOS, and Linux checkouts agree.
+# Without this, every commit from a Windows checkout emits CRLF warnings.
+* text=auto eol=lf
+
+# Shell scripts must stay LF or they break in containers and CI.
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Windows-native scripts must stay CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Lock files are generated — keep diffs out of review noise.
+uv.lock linguist-generated=true
+pnpm-lock.yaml linguist-generated=true
+
+# Binary assets: never diff or normalise.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.gz binary

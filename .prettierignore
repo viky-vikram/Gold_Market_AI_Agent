@@ -1,0 +1,13 @@
+# Controlled specifications are read-only. Formatting them would rewrite the
+# approved documents and trip the integrity gate in tests/smoke/.
+docs/controlled/
+
+# Generated or vendored
+node_modules/
+.venv/
+.next/
+dist/
+build/
+pnpm-lock.yaml
+uv.lock
+docs/controlled-checksums.json

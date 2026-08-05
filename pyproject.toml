@@ -1,0 +1,59 @@
+[project]
+name = "aurumiq"
+version = "0.0.0"
+description = "AurumIQ — Chennai-first Gold Market AI Agent (workspace root)"
+requires-python = ">=3.12"
+dependencies = []
+
+# Virtual workspace root: this package is never built or published.
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["apps/api"]
+
+# Sprint 0 is a skeleton. Runtime dependencies (FastAPI, SQLAlchemy, LangGraph,
+# openai, langchain-openai, ...) are added in GMAA-002+ when code actually uses
+# them, so their exact versions are locked against working code rather than
+# guessed here. See docs/controlled/Gold_Market_AI_Agent_TRD.md section 3.
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.6",
+    "mypy>=1.11",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+# ruff formats Python code blocks inside Markdown. The controlled documents
+# contain illustrative Python (TRD sections 7.3/7.4, Contracts sections 11-13),
+# so without this exclusion `ruff format .` rewrites two approved specifications
+# and trips the integrity gate in tests/smoke/.
+extend-exclude = [".venv", "docs/controlled"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # import sorting
+    "UP",  # pyupgrade
+    "B",   # bugbear
+    "SIM", # simplify
+    "N",   # pep8-naming
+    "S",   # flake8-bandit security rules
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Assertions are the point of a test file.
+"tests/**" = ["S101"]
+"apps/api/tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["apps/api/app", "tests", "scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "apps/api/tests"]
+addopts = "-q --strict-markers"

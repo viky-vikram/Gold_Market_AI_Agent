@@ -1,0 +1,96 @@
+# Local development stack for AurumIQ.
+#
+# `docker compose up -d` starts infrastructure only — PostgreSQL with pgvector
+# and Valkey. Those are real and usable today.
+#
+# The api, worker and web services are declared here so the topology matches
+# TRD section 5.3, but they sit behind the `app` profile because Sprint 0 is a
+# skeleton: there is no application code to run yet. They activate from GMAA-002
+# onward via `docker compose --profile app up -d`. Declaring them without a
+# profile would produce a stack that appears to start and then immediately fails.
+
+name: aurumiq
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: aurumiq
+      POSTGRES_PASSWORD: aurumiq
+      POSTGRES_DB: aurumiq
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aurumiq -d aurumiq"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: ["valkey-server", "--appendonly", "yes"]
+    ports:
+      - "${VALKEY_HOST_PORT:-6379}:6379"
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    # Optional so `docker compose config` validates on a fresh clone, before
+    # anyone has run `cp .env.example .env`.
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "${API_HOST_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+
+  worker:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    command: ["celery", "-A", "app.tasks", "worker", "--loglevel=info"]
+    # Optional so `docker compose config` validates on a fresh clone, before
+    # anyone has run `cp .env.example .env`.
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+
+  web:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    # Optional so `docker compose config` validates on a fresh clone, before
+    # anyone has run `cp .env.example .env`.
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "${WEB_HOST_PORT:-3000}:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  valkey_data:
