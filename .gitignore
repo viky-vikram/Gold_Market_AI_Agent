@@ -1,0 +1,50 @@
+# Secrets — never commit. Use .env.example with placeholders.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Node
+node_modules/
+.pnpm-store/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.eslintcache
+
+# Test and build artefacts
+playwright-report/
+test-results/
+.turbo/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local infrastructure state
+docker/data/
+*.log
+
+# Claude Code local overrides (project settings ARE committed)
+.claude/settings.local.json

@@ -1,0 +1,24 @@
+{
+  "$comment": "Pinned engineering-workflow plugin. Upgrades require human review, a documented change record, and revalidation of affected gates. See docs/controlled/Gold_Market_AI_Agent_TRD.md.",
+  "marketplace": {
+    "name": "addy-agent-skills",
+    "source": "https://github.com/addyosmani/agent-skills.git"
+  },
+  "plugin": {
+    "name": "agent-skills",
+    "id": "agent-skills@addy-agent-skills",
+    "scope": "project"
+  },
+  "commit_sha": "bdf76c7c6b7b3b3e01bb15c9fdc42ac5351855c1",
+  "commit_date": "2026-08-03",
+  "verified_at": "2026-08-05",
+  "verified_with": {
+    "claude_code_version": "2.1.221",
+    "method": "claude plugin list && claude plugin details agent-skills"
+  },
+  "inventory": {
+    "skills": 24,
+    "commands": 8,
+    "agents": 4
+  }
+}
