@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+# esbuild is a Vitest dependency and needs its postinstall to link the platform
+# binary. Explicitly allowlisted rather than left implicit, so any *new* package
+# requesting build-script execution fails the install and gets reviewed.
+allowBuilds:
+  esbuild: true

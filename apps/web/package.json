@@ -1,0 +1,7 @@
+{
+  "name": "@aurumiq/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AurumIQ Next.js frontend. Scaffolded in a later sprint; Sprint 0 keeps the workspace slot only."
+}

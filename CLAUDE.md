@@ -8,15 +8,15 @@ sessions and human contributors. Keep it short — it points to authority, it do
 These seven documents under `docs/controlled/` are the specification. Read only the sections a task
 actually needs.
 
-| # | Document | Owns |
-|---|---|---|
-| 1 | `Gold_Market_AI_Agent_PRD.md` | Product scope, users, quotas, acceptance outcomes |
-| 2 | `Gold_Market_AI_Agent_TRD.md` | Architecture, technology, security, reliability, NFRs |
-| 3 | `Gold_Market_AI_Agent_Backend_Database_Schema.md` | Persistence, migrations, constraints, RLS, audit |
-| 4 | `Gold_Market_AI_Agent_API_Event_Provider_Contracts.md` | REST, events, provider interfaces, idempotency |
-| 5 | `Gold_Market_AI_Agent_Application_Flow.md` | Success, failure, fallback, recovery, quota flows |
-| 6 | `Gold_Market_AI_Agent_UI_UX_Recommendations.md` | Interface behaviour, accessibility, trust indicators |
-| 7 | `Gold_Market_AI_Agent_Detailed_Implementation_Plan.md` | Build order, sprint gates, test evidence, exit criteria |
+| #   | Document                                               | Owns                                                    |
+| --- | ------------------------------------------------------ | ------------------------------------------------------- |
+| 1   | `Gold_Market_AI_Agent_PRD.md`                          | Product scope, users, quotas, acceptance outcomes       |
+| 2   | `Gold_Market_AI_Agent_TRD.md`                          | Architecture, technology, security, reliability, NFRs   |
+| 3   | `Gold_Market_AI_Agent_Backend_Database_Schema.md`      | Persistence, migrations, constraints, RLS, audit        |
+| 4   | `Gold_Market_AI_Agent_API_Event_Provider_Contracts.md` | REST, events, provider interfaces, idempotency          |
+| 5   | `Gold_Market_AI_Agent_Application_Flow.md`             | Success, failure, fallback, recovery, quota flows       |
+| 6   | `Gold_Market_AI_Agent_UI_UX_Recommendations.md`        | Interface behaviour, accessibility, trust indicators    |
+| 7   | `Gold_Market_AI_Agent_Detailed_Implementation_Plan.md` | Build order, sprint gates, test evidence, exit criteria |
 
 **Precedence on conflict:** approved ADR → 1 → 2 → 3 → 4 → 5 → 6 → 7.
 
@@ -26,7 +26,7 @@ the smallest safe resolution, and stop for human approval.
 ## Protected files
 
 `docs/controlled/**` is **read-only**. Changing any of it requires explicit human approval and a
-controlled change record. A test enforces this — see `apps/api/tests/test_controlled_documents.py`.
+controlled change record. A test enforces this — see `tests/smoke/test_controlled_documents.py`.
 
 Never commit `.env`, tokens, credentials, personal data, or provider payloads containing restricted
 data. Use `.env.example` with placeholders.
