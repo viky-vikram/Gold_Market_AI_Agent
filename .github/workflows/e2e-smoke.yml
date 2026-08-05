@@ -1,0 +1,57 @@
+name: E2E smoke
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Playwright P0 journeys
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Playwright and the P0 journeys arrive once apps/web exists. Reports
+      # honestly until then; activates automatically once a config lands.
+      - name: Detect Playwright suite
+        id: detect
+        run: |
+          if compgen -G "playwright.config.*" > /dev/null || compgen -G "tests/e2e/*.spec.ts" > /dev/null; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No Playwright configuration or specs yet (apps/web is a Sprint 0 skeleton). Nothing to run."
+          fi
+
+      - name: Install browsers
+        if: steps.detect.outputs.present == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E smoke
+        if: steps.detect.outputs.present == 'true'
+        run: pnpm exec playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: failure() && steps.detect.outputs.present == 'true'
+        with:
+          name: playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore

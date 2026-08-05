@@ -1,0 +1,51 @@
+name: Frontend
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, type-check, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      # apps/web has no Next.js application yet (ADR-0001, skeleton scaffold
+      # depth). This step starts doing real work automatically once a build
+      # script exists, rather than staying a permanent no-op.
+      - name: Build
+        run: |
+          if node -e "process.exit(require('./apps/web/package.json').scripts?.build ? 0 : 1)" 2>/dev/null; then
+            pnpm --filter @aurumiq/web build
+          else
+            echo "::notice::apps/web has no build script yet (Sprint 0 skeleton). Nothing to build."
+          fi
