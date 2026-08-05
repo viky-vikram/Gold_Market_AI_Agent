@@ -2,8 +2,8 @@
 
 **Purpose:** Start and continue the AurumIQ implementation using Claude Code and Addy Osmani's `agent-skills` workflow.
 
-**Runtime AI architecture:** AurumIQ runtime agents use OpenAI `gpt-5.4-mini`.  
-**Development assistant:** Claude Code.  
+**Runtime AI architecture:** AurumIQ runtime agents use OpenAI `gpt-5.4-mini`.
+**Development assistant:** Claude Code.
 **Engineering workflow:** Addy Osmani's `addyosmani/agent-skills`.
 
 ---

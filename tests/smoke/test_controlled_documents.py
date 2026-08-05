@@ -32,8 +32,7 @@ def test_controlled_document_count_is_exactly_seven() -> None:
     """The controlled set is deliberately limited to seven documents."""
     present = sorted(p.name for p in CONTROLLED_DIR.glob("*.md"))
     assert present == sorted(CONTROLLED_DOCUMENTS), (
-        "docs/controlled/ must contain exactly the seven controlled documents. "
-        f"Found: {present}"
+        f"docs/controlled/ must contain exactly the seven controlled documents. Found: {present}"
     )
 
 
