@@ -1,4 +1,12 @@
 {
+  "extraKnownMarketplaces": {
+    "addy-agent-skills": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/addyosmani/agent-skills.git"
+      }
+    }
+  },
   "enabledPlugins": {
     "agent-skills@addy-agent-skills": true
   }
